@@ -11,7 +11,7 @@
 
   ![Notes page](/public/assets/note_page.PNG)
 
-  Link to the live application: 
+  Link to the live application: https://lit-refuge-99276.herokuapp.com/
 
   ## Table of Contents:
 
