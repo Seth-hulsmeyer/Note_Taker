@@ -39,7 +39,8 @@ app.delete("/api/notes/:id", (req, res) => {
   const newArray = database.filter((note) => note.id !== req.params.id);
   console.log(newArray);
   fs.writeFile("./db/db.json", JSON.stringify(newArray), () =>
-    res.redirect("/notes")
+    // app.get("/api/notes", (req, res) => res.json(database))
+    res.json({ ok: true })
   );
 });
 //-----------------------------------------------------------------------
