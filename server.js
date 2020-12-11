@@ -4,7 +4,9 @@ const path = require("path");
 const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
 const database = require("./db/db.json");
-const { RSA_NO_PADDING } = require("constants");
+const util = require("util");
+const readFileAsync = util.promisify(fs.readFile);
+const writeFileAsync = util.promisify(fs.writeFile);
 
 //express app setup
 const app = express();
@@ -21,7 +23,12 @@ app.get("/notes", (req, res) =>
 );
 
 //get for notes API
-app.get("/api/notes", (req, res) => res.json(database));
+app.get("/api/notes", (req, res) => {
+  readFileAsync("./db/db.json", "utf8").then((notes) => {
+    let notesArray = JSON.parse(notes);
+    res.json(notesArray);
+  });
+});
 
 //post entered notes to db.json
 app.post("/api/notes", (req, res) => {
@@ -33,22 +40,26 @@ app.post("/api/notes", (req, res) => {
   );
 });
 
-//------------------------------------------------------------------------
-//BONUS: delete note functionality
-app.delete("/api/notes/:id", (req, res) => {
-  const newArray = database.filter((note) => note.id !== req.params.id);
-  console.log(newArray);
-  fs.writeFile("./db/db.json", JSON.stringify(newArray), () =>
-    // app.get("/api/notes", (req, res) => res.json(database))
-    res.json({ ok: true })
-  );
-});
-//-----------------------------------------------------------------------
-
 //get main page index.html
 app.get("*", (req, res) =>
   res.sendFile(path.join(__dirname, "/public/index.html"))
 );
+
+//------------------------------------------------------------------------
+//BONUS: delete note functionality
+app.delete("/api/notes/:id", (req, res) => {
+  const id = req.params.id;
+  readFileAsync("./db/db.json", "utf8").then((notes) => {
+    let parseNotes = JSON.parse(notes);
+    let updatedNotes = parseNotes.filter((note) => note.id !== id);
+    console.log(updatedNotes);
+    writeFileAsync(
+      "./db/db.json",
+      JSON.stringify(updatedNotes)
+    ).then((updatedNotes) => res.json(updatedNotes));
+  });
+});
+//-----------------------------------------------------------------------
 
 //server listener
 app.listen(PORT, () => console.log(`Server listening on ${PORT}`));
